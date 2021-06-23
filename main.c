@@ -3,48 +3,92 @@
 #include <stdlib.h>
 #include <string.h>
 #include<io.h>
+#include <stdlib.h>
 
-#pragma comment(lib,"ws2_32.lib") //Winsock Library
+void clrscr(){ system("@cls||clear"); }
 
-WSADATA wsa;
-SOCKET s;
-struct sockaddr_in server;
+int minimum(int i, int j){
+	if(i < j){return i;}else{return j;}
+}
+
+int range(int i, int j){
+	if(i < j){return abs(j-i);}else{return abs(i-j);}
+}
+
+
+#define WIDTH 40
+#define HEIGHT 40
+
+char GC[HEIGHT][WIDTH];
+
+void clearcanvas(){
+	for(int i=0; i<HEIGHT;i++){
+		for(int j=0;j<WIDTH;j++){
+			GC[i][j] = ' ';
+		}
+	}
+}
+
+void drawscreen(){
+	clrscr();
+	for(int i=0; i<HEIGHT;i++){
+		for(int j=0;j<WIDTH;j++){
+			printf("%c", GC[i][j]);
+		}
+		printf("\n");
+	}
+}
+
+void drawline(int xi, int yi, int xf, int yf, char c){
+	//Check if line is constant or sloped
+	if(xi == xf || yi == yf){
+		if(xi == xf){
+			//Draw horizontal line
+			for (int i = 0; i < range(yi,yf) || range(yi,yf) == i; i++){ GC[minimum(yi,yf)+i][xi] = c;}	
+		}else{
+			for (int i = 0; i < range(xi,xf) || range(xi,xf) == i; i++){ GC[yi][minimum(xi,xf)+i] = c;}
+		}
+	}else{
+
+	}
+}
+
+//Initialises game state
+void writescreen(int posx, int posy, char c[], int len){
+	if(posy <= HEIGHT && posy > 0){
+		int len = len;
+		if((len + posx) > WIDTH){
+			len = WIDTH - posx;
+		}
+		for(int i=0; i< len && c[i]!= '\0';i++){
+			GC[posy][posx+i] = c[i];
+		}
+	}
+}
+
+
+void init(){
+	//Set game board to empty
+	for(int i=0; i<WIDTH;i++){
+		for(int j=0;j<HEIGHT;j++){
+			GC[i][j] = ' ';
+		}
+	}
+
+	//Set initial Game Screen
+
+	drawline(0, 0, 0, HEIGHT-1, '|');
+	drawline(WIDTH-1, 0, WIDTH-1, HEIGHT-1, '|');
+	drawline(0, 0, WIDTH-1, 0, '-');
+	drawline(0, HEIGHT-1, WIDTH-1, HEIGHT-1, '-');
+	drawline(20, 10, 20, 10, 'a');
+	writescreen(1, 10, "string" , 5);
+	drawscreen();
+}
 
 int main(int argc , char *argv[]){
+	//run initialise program defaults/configs
+	clrscr();
+	init();
 
-	/*
-		Makes a socket connection
-	*/
-	printf("\nInitialising Winsock...");
-	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
-	{
-		printf("Failed. Error Code : %d",WSAGetLastError());
-		return 1;
-	}
-	
-	printf("Initialised.\n");
-	
-	//Create a socket
-	if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET)
-	{
-		printf("Could not create socket : %d" , WSAGetLastError());
-	}
-
-	printf("Socket created.\n");
-	
-	
-	server.sin_addr.s_addr = inet_addr("192.168.0.5");
-	server.sin_family = AF_INET;
-	server.sin_port = htons( 8888 );
-
-	//Connect to remote server
-	if (connect(s , (struct sockaddr *)&server , sizeof(server)) < 0)
-	{
-		puts("connect error");
-		return 1;
-	}
-	
-	puts("Connected");
-
-	return 0;
 }
