@@ -4,6 +4,7 @@
 #include <string.h>
 #include<io.h>
 #include <stdlib.h>
+#include <math.h>
 
 #define WIDTH 40
 #define HEIGHT 40
@@ -52,9 +53,14 @@ void drawline(int xi, int yi, int xf, int yf, char c){
 			for (int i = 0; i < range(xi,xf) || range(xi,xf) == i; i++){ GC[yi][minimum(xi,xf)+i] = c;}
 		}
 	}else{
-		int grad = (yf-yi)/(xf-xi);
-		int con = yi-(grad*xi);
-		for(int i=minimum(xi,xf); i < (minimum(xi,xf)+range(xi,xf));i++){ GC[(grad*i)+con][i] = c;}
+		int grad = round((yf-yi)/(xf-xi));
+		int con = round(yi-(grad*xi));
+
+		if(range(xi,xf) > range(yi,yf)){
+			for(int i=minimum(xi,xf); i < (minimum(xi,xf)+range(xi,xf));i++){ GC[(int)round((grad*i)+con)][i] = c;}
+		}else{
+			for(int i=minimum(yi,yf); i < (minimum(yi,yf)+range(yi,yf));i++){ GC[i][(int)round((i-con)/grad)] = c;}
+		}
 	}
 }
 
@@ -94,6 +100,7 @@ void init(){
 	drawline(0, 0, WIDTH-1, 0, '-');
 	drawline(0, HEIGHT-1, WIDTH-1, HEIGHT-1, '-');
 	drawline(0, 0, WIDTH,HEIGHT, '.');
+	drawline(6, 8, 13,20, '?');
 	drawscreen();
 }
 
