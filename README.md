@@ -1,2 +1,1 @@
-# c game
- 
+# Multiplayer Pong written in C
