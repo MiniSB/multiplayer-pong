@@ -53,6 +53,12 @@ void drawline(int xi, int yi, int xf, int yf, char c){
 	}
 }
 
+void drawchar(int x, int y, char c){
+	if(x>=0 && x<=HEIGHT && y>=0 && y<=HEIGHT){
+		GC[y][x] = c;
+	}
+}
+
 //Initialises game state
 void writescreen(int posx, int posy, char c[], int len){
 	if(posy <= HEIGHT && posy > 0){
@@ -83,6 +89,7 @@ void init(){
 	drawline(0, HEIGHT-1, WIDTH-1, HEIGHT-1, '-');
 	drawline(20, 10, 20, 10, 'a');
 	writescreen(1, 10, "string" , 5);
+	drawchar(20, 20, '7');
 	drawscreen();
 }
 
