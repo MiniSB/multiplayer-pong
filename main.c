@@ -5,6 +5,13 @@
 #include<io.h>
 #include <stdlib.h>
 
+#define WIDTH 40
+#define HEIGHT 40
+
+char GC[HEIGHT][WIDTH];
+
+/*__________________________HELPER FUNCTIONS__________________________*/
+
 void clrscr(){ system("@cls||clear"); }
 
 int minimum(int i, int j){
@@ -15,11 +22,7 @@ int range(int i, int j){
 	if(i < j){return abs(j-i);}else{return abs(i-j);}
 }
 
-
-#define WIDTH 40
-#define HEIGHT 40
-
-char GC[HEIGHT][WIDTH];
+/*_________________________GRAPHICS LIBRARY____________________________*/
 
 void clearcanvas(){
 	for(int i=0; i<HEIGHT;i++){
@@ -49,7 +52,9 @@ void drawline(int xi, int yi, int xf, int yf, char c){
 			for (int i = 0; i < range(xi,xf) || range(xi,xf) == i; i++){ GC[yi][minimum(xi,xf)+i] = c;}
 		}
 	}else{
-
+		int grad = (yf-yi)/(xf-xi);
+		int con = yi-(grad*xi);
+		for(int i=minimum(xi,xf); i < (minimum(xi,xf)+range(xi,xf));i++){ GC[(grad*i)+con][i] = c;}
 	}
 }
 
@@ -72,6 +77,7 @@ void writescreen(int posx, int posy, char c[], int len){
 	}
 }
 
+/*____________________________________________________________________*/
 
 void init(){
 	//Set game board to empty
@@ -87,9 +93,7 @@ void init(){
 	drawline(WIDTH-1, 0, WIDTH-1, HEIGHT-1, '|');
 	drawline(0, 0, WIDTH-1, 0, '-');
 	drawline(0, HEIGHT-1, WIDTH-1, HEIGHT-1, '-');
-	drawline(20, 10, 20, 10, 'a');
-	writescreen(1, 10, "string" , 5);
-	drawchar(20, 20, '7');
+	drawline(0, 0, WIDTH,HEIGHT, '.');
 	drawscreen();
 }
 
