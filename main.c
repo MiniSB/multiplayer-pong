@@ -7,7 +7,6 @@
 #include <math.h>
 #include <conio.h>
 #include <stdbool.h>
-#include <pthread.h>
 
 #define WIDTH 40
 #define HEIGHT 40
@@ -153,13 +152,6 @@ int main(int argc , char *argv[]){
 
 	bool valid = false;
 	while(!valid){
-
-		pthread_t thread_id;
-		printf("Before Thread\n");
-		pthread_create(&thread_id, NULL, myThreadFun, NULL);
-		pthread_join(thread_id, NULL);
-		printf("After Thread\n");
-
 		char ip = getch();
 		
 		if(ip =='s'){
