@@ -2,7 +2,7 @@
 #include<winsock2.h>
 #include <stdlib.h>
 #include <string.h>
-#include<io.h>
+#include <io.h>
 #include <stdlib.h>
 #include <math.h>
 #include <conio.h>
@@ -14,8 +14,6 @@
 char GC[HEIGHT][WIDTH];
 
 /*__________________________HELPER FUNCTIONS__________________________*/
-
-void clrscr(){ system("@cls||clear"); }
 
 int minimum(int i, int j){
 	if(i < j){return i;}else{return j;}
@@ -44,7 +42,6 @@ void clearcanvas(){
 }
 
 void drawscreen(){
-	// clrscr();
 	printf("\x1b[H");
 	for(int i=0; i<HEIGHT;i++){
 		for(int j=0;j<WIDTH;j++){
@@ -158,7 +155,6 @@ int main(int argc , char *argv[]){
 
 	int option = 0;
 
-	clrscr();
 	menu(option);
 	drawscreen();
 
@@ -181,7 +177,6 @@ int main(int argc , char *argv[]){
 		}else
 
 		menu(option);
-		clrscr();
 		drawscreen();
 
 		selectoropt:
