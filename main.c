@@ -109,7 +109,6 @@ void drawborder(){
 void menu(int option){
 	//Set initial Game Screen
 	clearcanvas();
-	clrscr();
 	drawborder();
 	writescreen(centertext("Pong, Multiplayer Game"), 10, "Pong, Multiplayer Game");
 
@@ -131,7 +130,6 @@ void menu(int option){
 		writescreen(centertext("3. Exit"), 30, "3. Exit");
 	}
 	// writescreen((WIDTH-pointerlen("Pong, Multipleayer Game"))/2);
-	drawscreen();
 }
 
 void init(){
@@ -167,5 +165,7 @@ int main(int argc , char *argv[]){
 		}
 
 		menu(option);
+		clrscr();
+		drawscreen();
 	}
 }
