@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include<winsock2.h>
+#include <winsock2.h>
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>
@@ -7,13 +7,17 @@
 #include <math.h>
 #include <conio.h>
 #include <stdbool.h>
+#include <windows.h>
 
 #define WIDTH 40
 #define HEIGHT 40
+#define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
 
 char GC[HEIGHT][WIDTH];
 
 /*__________________________HELPER FUNCTIONS__________________________*/
+
+void clrscr(){ system("@cls||clear"); }
 
 int minimum(int i, int j){
 	if(i < j){return i;}else{return j;}
@@ -42,11 +46,16 @@ void clearcanvas(){
 }
 
 void drawscreen(){
-	printf("\x1b[H");
+	//Moves windows handle to console beginning
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD pos = {0, 0};
+    SetConsoleCursorPosition(hConsole, pos);
 	for(int i=0; i<HEIGHT;i++){
+		putchar('\r');
 		for(int j=0;j<WIDTH;j++){
 			putchar(GC[i][j]);
 		}
+		
 		putchar('\n');
 	}
 }
@@ -110,6 +119,7 @@ void clientmenu(){
 //Server
 void servermenu(){
 	//server menu loop
+
 }
 
 
@@ -142,6 +152,7 @@ void menu(int option){
 
 void init(){
 	//Set game board to empty
+	clrscr();
 	for(int i=0; i<WIDTH;i++){
 		for(int j=0;j<HEIGHT;j++){
 			GC[i][j] = ' ';
@@ -154,7 +165,6 @@ int main(int argc , char *argv[]){
 	init();
 
 	int option = 0;
-
 	menu(option);
 	drawscreen();
 
