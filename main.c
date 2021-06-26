@@ -103,9 +103,20 @@ void drawborder(){
 	drawline(0, HEIGHT-1, WIDTH-1, HEIGHT-1, '-');
 }
 /*____________________________________________________________________*/
+
 //Client 
+void clientmenu(){
+	//client menu loop
+}
+
 
 //Server
+void servermenu(){
+	//server menu loop
+}
+
+
+//Main Menu
 void menu(int option){
 	//Set initial Game Screen
 	clearcanvas();
@@ -146,26 +157,43 @@ int main(int argc , char *argv[]){
 	init();
 
 	int option = 0;
+
+	clrscr();
 	menu(option);
+	drawscreen();
 
 	bool valid = false;
 	while(!valid){
 		char ip = getch();
 		
-		if(ip =='s'){
+		if(ip =='s' || ip =='S'){
 			option++;
-		}else if(ip == 'w'){
+		}else if(ip == 'w' || ip =='W'){
 			option--;
+		}else{
+			goto selectoropt;
 		}
 
 		if(option >2){
 			option = 2;
 		}else if(option < 0){
 			option = 0;
-		}
+		}else
 
 		menu(option);
 		clrscr();
 		drawscreen();
+
+		selectoropt:
+		if(ip =='f' || ip =='F'){
+			if(option == 0){
+				servermenu();
+			}else if(option == 1){
+				clientmenu();
+			}else if(option == 2){
+				valid = true;
+			}
+		};
 	}
+	//Exited Game loop here
 }
