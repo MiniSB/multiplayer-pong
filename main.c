@@ -163,12 +163,18 @@ void addresschange(){
 	writescreen(centertext("New Address: "),20, "New Address: ");
 
 	drawscreen();
-	char prt[4];
-
 	cursormove(centertext("New Address: ")+pointerlen("New Address: ")+1, 20);
 	cursor(TRUE);
+	scanf("%s", addr);
 
+	clearcanvas();
+	drawborder();
+	writescreen(centertext("Changing Address"),10, "Changing Address");
+	writescreen(centertext("Address Changed"), 20, "Address Changed");
+	writescreen(centertext("Press any key to continue"), 35, "Press any key to continue");
 	cursor(FALSE);
+	drawscreen();
+	getch();
 }
 
 //Client 
@@ -195,7 +201,7 @@ void clientmenu(){
 
 		//concate address message
 		char caddr[] = "Address: ";
-		strcat(cport, addr);
+		strcat(caddr, addr);
 		writescreen(centertext(caddr), 11, caddr);
 
 		if(option == 0){
@@ -241,7 +247,7 @@ void clientmenu(){
 			if(option == 0){
 				portchange();
 			}else if(option == 1){
-				// Address change
+				addresschange();
 			}else if(option == 2){
 				//Join game
 			}else if(option == 3){
