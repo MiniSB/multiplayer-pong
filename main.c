@@ -14,6 +14,7 @@
 #define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
 
 int PORT= 8080;
+char addr[15];
 char GC[HEIGHT][WIDTH];
 
 /*__________________________HELPER FUNCTIONS__________________________*/
@@ -155,18 +156,99 @@ void portchange(){
 	getch();	
 }
 
+void addresschange(){
+	clearcanvas();
+	drawborder();
+	writescreen(centertext("Changing Address"),10, "Changing Address");
+	writescreen(centertext("New Address: "),20, "New Address: ");
+
+	drawscreen();
+	char prt[4];
+
+	cursormove(centertext("New Address: ")+pointerlen("New Address: ")+1, 20);
+	cursor(TRUE);
+
+	cursor(FALSE);
+}
+
 //Client 
 void clientmenu(){
 	//client menu loop
-	clearcanvas();
-	drawborder();
 
-	writescreen(centertext("Find Game"), 10, "Find Game");
+	int option = 0;
+	bool loop = false;
 
-	drawscreen();
+	while(!loop){
+		clearcanvas();
+		drawborder();
 
-	char ip = getch();
+		// writescreen(centertext("Find Game"), 10, "Find Game");
 
+		//Cast port to string
+		char prt[4];
+		sprintf(prt, "%d", PORT);
+
+		//concate port message
+		char cport[] = "Port: ";
+		strcat(cport, prt);
+		writescreen(centertext(cport), 10, cport);
+
+		//concate address message
+		char caddr[] = "Address: ";
+		strcat(cport, addr);
+		writescreen(centertext(caddr), 11, caddr);
+
+		if(option == 0){
+			writescreen(centertext("1. Change Port"), 20, " -> 1. Change Port");
+		}else{
+			writescreen(centertext("1. Change Port"), 20, "1. Change Port");
+		}
+
+		if(option == 1){
+			writescreen(centertext("2. Change Address"), 25, " -> 2. Change Address");
+		}else{
+			writescreen(centertext("2. Change Address"), 25, "2. Change Address");
+		}
+
+		if(option == 2){
+			writescreen(centertext("3. Join Game"), 30, " -> 3. Join Game");
+		}else{
+			writescreen(centertext("3. Join Game"), 30, "3. Join Game");
+		}
+
+		if(option == 3){
+			writescreen(centertext("4. Back"), 35, " -> 4. Back");
+		}else{
+			writescreen(centertext("4. Back"), 35, "4. Back");
+		}
+		drawscreen();
+
+		char ip = getch();
+
+		if(ip =='s' || ip =='S'){
+			option++;
+		}else if(ip == 'w' || ip =='W'){
+			option--;
+		}
+
+		if(option >3){
+			option = 0;
+		}else if(option < 0){
+			option = 3;
+		}
+
+		if(ip =='f' || ip =='F'){
+			if(option == 0){
+				portchange();
+			}else if(option == 1){
+				// Address change
+			}else if(option == 2){
+				//Join game
+			}else if(option == 3){
+				loop = true;
+			}
+		};
+	}
 }
 
 
