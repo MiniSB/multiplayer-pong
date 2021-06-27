@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <winsock2.h>
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>
@@ -9,13 +8,41 @@
 #include <stdbool.h>
 #include <windows.h>
 
+//Socket Libraries
+#include<winsock2.h>
+#pragma comment(lib,"ws2_32.lib") //Winsock Library
+
+
 #define WIDTH 40
 #define HEIGHT 40
 #define gotoxy(x, y) printf("\033[%d;%dH", (y), (x))
 
+
+//Port and address for connections
 int PORT = 8080;
 char ADDRESS[15];
+
+//
+WSADATA wsa;
+SOCKET s , new_socket;
+struct sockaddr_in server , client;
+char server_reply[2000];
+int recv_size;
+
+//Game board dimensions
 char GC[HEIGHT][WIDTH];
+
+//in game bool
+bool ingame = false;
+
+//OPPONENT STRUCT
+struct opponent {
+	int y;
+};
+//USER STRUCT
+struct user{
+	int y;
+};
 
 /*__________________________HELPER FUNCTIONS__________________________*/
 //Move Cursor
@@ -42,14 +69,7 @@ void clrscr() { system("@cls||clear"); }
 //Minimum of 2 values
 int minimum(int i, int j)
 {
-	if (i < j)
-	{
-		return i;
-	}
-	else
-	{
-		return j;
-	}
+	if (i < j){return i;}else{return j;	}
 }
 
 //Range of 2 values
@@ -85,11 +105,6 @@ int centertext(char c[])
 
 void clearcanvas()
 {
-	// for(int i=0; i<HEIGHT;i++){
-	// 	for(int j=0;j<WIDTH;j++){
-	// 		GC[i][j] = ' ';
-	// 	}
-	// }
 	memset(GC, ' ', sizeof(GC[0][0]) * WIDTH * HEIGHT);
 }
 
@@ -188,6 +203,123 @@ void drawborder()
 	drawline(0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, '-');
 }
 /*____________________________________________________________________*/
+//Create server
+int gamehost(){
+	//Initialise winsock
+	int c;
+	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
+	{
+		//Failed
+		printf("Failed. Error Code : %d",WSAGetLastError());
+		return 1;
+	}
+
+	//Create a socket
+	if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET)
+	{
+		printf("Could not create socket : %d" , WSAGetLastError());
+	}
+
+	//Socket should be created by now
+	//Prepare the sockaddr_in structure
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = INADDR_ANY;
+	server.sin_port = htons( PORT );
+
+	//Bind the socket
+	if( bind(s ,(struct sockaddr *)&server , sizeof(server)) == SOCKET_ERROR)
+	{
+		//bind has failed, exit program
+		printf("Bind failed with error code : %d" , WSAGetLastError());
+		// exit(EXIT_FAILURE);
+	}
+	
+	//Bind is done
+	//Listen to incoming connections, int denotes time before timeout
+	puts("Listening");
+	listen(s , 3);
+	c = sizeof(struct sockaddr_in);
+	
+	while( (new_socket = accept(s , (struct sockaddr *)&client, &c)) != INVALID_SOCKET )
+	{
+		puts("Connection accepted");
+		
+		//Reply to the client
+		//Game loop stuff goes in here
+		// while(true){
+			char message[] = "Hello Client , I have received your connection. But I have to go now, bye\n";
+			send(new_socket , message , strlen(message) , 0);
+			Sleep(1000);
+			
+		// }
+	}
+	
+	if (new_socket == INVALID_SOCKET)
+	{
+		printf("accept failed with error code : %d" , WSAGetLastError());
+		// Socket was invalid, just exit
+		return 1;
+	}
+
+	closesocket(s);
+	WSACleanup();
+	
+	return 0;
+}
+
+//Join server
+int gamejoin(){
+	/*
+		Makes a socket connection
+	*/
+	printf("\n");
+	printf("\nInitialising Winsock...");
+	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
+	{
+		printf("\nFailed. Error Code : %d",WSAGetLastError());
+		return 1;
+	}
+	
+	printf("Initialised.\n");
+	
+	//Create a socket
+	if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET)
+	{
+		printf("Could not create socket : %d" , WSAGetLastError());
+	}
+
+	printf("Socket created.\n");
+	
+	
+	server.sin_addr.s_addr = inet_addr(ADDRESS);
+	server.sin_family = AF_INET;
+	server.sin_port = htons( PORT );
+
+	//Connect to remote server
+	if (connect(s , (struct sockaddr *)&server , sizeof(server)) < 0)
+	{
+		puts("connect error");
+		return 1;
+	}
+	
+	puts("Connected");
+	// while(true){
+		//Game loop stuff goes in here
+		if((recv_size = recv(s , server_reply , 2000 , 0)) == SOCKET_ERROR)
+		{
+			puts("recv failed");
+		}
+		server_reply[recv_size] = '\0';
+		puts(server_reply);
+		Sleep(1000);
+	// }
+	
+
+	closesocket(s);
+	WSACleanup();
+	return 0;
+}
+
 //change port
 void portchange()
 {
@@ -336,7 +468,7 @@ void clientmenu()
 			}
 			else if (option == 2)
 			{
-				//Join game
+				gamejoin();
 			}
 			else if (option == 3)
 			{
@@ -427,6 +559,7 @@ void servermenu()
 			else if (option == 1)
 			{
 				//Create Game
+				gamehost();
 			}
 			else if (option == 2)
 			{
