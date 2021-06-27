@@ -17,21 +17,37 @@ int PORT= 8080;
 char GC[HEIGHT][WIDTH];
 
 /*__________________________HELPER FUNCTIONS__________________________*/
+//Move Cursor
 
+//Change Cursor Visibility
+void cursor(bool visibility)
+{
+	CONSOLE_CURSOR_INFO cursor;    
+	cursor.bVisible = visibility;    
+	cursor.dwSize = sizeof(cursor);    
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);    
+	SetConsoleCursorInfo(handle, &cursor);
+}
+
+//clear console screen
 void clrscr(){ system("@cls||clear"); }
 
+//Minimum of 2 values
 int minimum(int i, int j){
 	if(i < j){return i;}else{return j;}
 }
 
+//Range of 2 values
 int range(int i, int j){
 	if(i < j){return abs(j-i);}else{return abs(i-j);}
 }
 
+//Length of pointer
 int pointerlen(char c[]){
 	int i=1; while(c[i]!='\0'){i++;};return i;
 }
 
+//return position for text to be centred
 int centertext(char c[]){
 	return (WIDTH-pointerlen(c))/2;
 }
@@ -109,6 +125,11 @@ void drawborder(){
 	drawline(0, HEIGHT-1, WIDTH-1, HEIGHT-1, '-');
 }
 /*____________________________________________________________________*/
+//change port
+void portchange(){
+	clearcanvas();
+	drawborder();
+}
 
 //Client 
 void clientmenu(){
@@ -230,15 +251,6 @@ void init(){
 			GC[i][j] = ' ';
 		}
 	}
-}
-
-void cursor(bool visibility)
-{
-	CONSOLE_CURSOR_INFO cursor;    
-	cursor.bVisible = visibility;    
-	cursor.dwSize = sizeof(cursor);    
-	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);    
-	SetConsoleCursorInfo(handle, &cursor);
 }
 
 int main(int argc , char *argv[]){
