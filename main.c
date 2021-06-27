@@ -13,6 +13,7 @@
 #define HEIGHT 40
 #define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
 
+int PORT= 8080;
 char GC[HEIGHT][WIDTH];
 
 /*__________________________HELPER FUNCTIONS__________________________*/
@@ -55,7 +56,6 @@ void drawscreen(){
 		for(int j=0;j<WIDTH;j++){
 			putchar(GC[i][j]);
 		}
-		
 		putchar('\n');
 	}
 }
@@ -113,18 +113,90 @@ void drawborder(){
 //Client 
 void clientmenu(){
 	//client menu loop
+	clearcanvas();
+	drawborder();
+
+	writescreen(centertext("Find Game"), 10, "Find Game");
+
+	drawscreen();
+
+	char ip = getch();
+
 }
 
 
 //Server
 void servermenu(){
-	//server menu loop
+		
+	int option = 0;
+	bool loop = false;
+	while (!loop){
 
+		//server menu loop
+		clearcanvas();
+		drawborder();
+
+		//Cast port to string
+		char prt[4];
+		sprintf(prt, "%d", PORT);
+
+		//concate port message
+		char cport[] = "Port: ";
+		strcat(cport, prt);
+
+		writescreen(centertext("Hosting Game"), 5, "Hosting Game");
+		writescreen(centertext(cport), 10, cport);
+
+		if(option == 0){
+			writescreen(centertext("1. Change Port"), 20, " -> 1. Change Port");
+		}else{
+			writescreen(centertext("1. Change Port"), 20, "1. Change Port");
+		}
+
+		if(option == 1){
+			writescreen(centertext("2. Create Game"), 25, " -> 2. Create Game");
+		}else{
+			writescreen(centertext("2. Create Game"), 25, "2. Create Game");
+		}
+
+		if(option == 2){
+			writescreen(centertext("3. Back"), 30, " -> 3. Back");
+		}else{
+			writescreen(centertext("3. Back"), 30, "3. Back");
+		}
+		drawscreen();
+
+		char ip = getch();
+
+		if(ip =='s' || ip =='S'){
+			option++;
+		}else if(ip == 'w' || ip =='W'){
+			option--;
+		}
+
+		if(option >2){
+			option = 0;
+		}else if(option < 0){
+			option = 2;
+		}
+
+		if(ip =='f' || ip =='F'){
+			if(option == 0){
+				//Change Port PORT = function()
+			}else if(option == 1){
+				//Create Game
+			}else if(option == 2){
+				loop = true;
+			}
+		};
+
+	}
+	
 }
 
 
 //Main Menu
-void menu(int option){
+void mainmenu(int option){
 	//Set initial Game Screen
 	clearcanvas();
 	drawborder();
@@ -160,36 +232,43 @@ void init(){
 	}
 }
 
+void cursor(bool visibility)
+{
+	CONSOLE_CURSOR_INFO cursor;    
+	cursor.bVisible = visibility;    
+	cursor.dwSize = sizeof(cursor);    
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);    
+	SetConsoleCursorInfo(handle, &cursor);
+}
+
 int main(int argc , char *argv[]){
+	//Change Window Title
+	SetConsoleTitle("Pong but better");
+	cursor(FALSE);
+
 	//run initialise program defaults/configs and set title screen
 	init();
 
 	int option = 0;
-	menu(option);
-	drawscreen();
 
 	bool valid = false;
 	while(!valid){
+		mainmenu(option);
+		drawscreen();
 		char ip = getch();
 		
 		if(ip =='s' || ip =='S'){
 			option++;
 		}else if(ip == 'w' || ip =='W'){
 			option--;
-		}else{
-			goto selectoropt;
 		}
 
 		if(option >2){
-			option = 2;
-		}else if(option < 0){
 			option = 0;
-		}else
+		}else if(option < 0){
+			option = 2;
+		}
 
-		menu(option);
-		drawscreen();
-
-		selectoropt:
 		if(ip =='f' || ip =='F'){
 			if(option == 0){
 				servermenu();
@@ -201,4 +280,5 @@ int main(int argc , char *argv[]){
 		};
 	}
 	//Exited Game loop here
+	cursor(TRUE);
 }
