@@ -18,6 +18,11 @@ char GC[HEIGHT][WIDTH];
 
 /*__________________________HELPER FUNCTIONS__________________________*/
 //Move Cursor
+void cursormove(int x, int y){
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD pos = {x, y};
+    SetConsoleCursorPosition(hConsole, pos);
+}
 
 //Change Cursor Visibility
 void cursor(bool visibility)
@@ -129,6 +134,25 @@ void drawborder(){
 void portchange(){
 	clearcanvas();
 	drawborder();
+	writescreen(centertext("Changing Port"),10, "Changing Port");
+	writescreen(centertext("New Port: "),20, "New Port: ");
+
+	drawscreen();
+	char prt[4];
+
+	cursormove(centertext("New Port: ")+pointerlen("New Port: ")+1, 20);
+	cursor(TRUE);
+	scanf("%s", prt);
+	sscanf(prt, "%d", &PORT);
+
+	clearcanvas();
+	drawborder();
+	writescreen(centertext("Changing Port"),10, "Changing Port");
+	writescreen(centertext("Port Changed"), 20, "Port Changed");
+	writescreen(centertext("Press any key to continue"), 35, "Press any key to continue");
+	cursor(FALSE);
+	drawscreen();
+	getch();	
 }
 
 //Client 
@@ -203,7 +227,7 @@ void servermenu(){
 
 		if(ip =='f' || ip =='F'){
 			if(option == 0){
-				//Change Port PORT = function()
+				portchange();
 			}else if(option == 1){
 				//Create Game
 			}else if(option == 2){
