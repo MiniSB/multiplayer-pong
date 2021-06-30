@@ -38,6 +38,12 @@ bool ingame = false;
 int opponent_x;
 int user_x;
 
+struct _ball{
+	int x;int y;int dx;int dy;
+};
+
+struct _ball ball;
+
 /*__________________________HELPER FUNCTIONS__________________________*/
 //Move Cursor
 void cursormove(int x, int y)
@@ -197,8 +203,21 @@ void drawborder()
 	drawline(0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, '-');
 }
 /*____________________________________________________________________*/
-DWORD WINAPI GraphicsLoop(void* data){
 
+//Draws the screen
+void GraphicsLoop(){
+	while(ingame){
+		//Once every 10 seconds
+		clearcanvas();
+		drawborder();
+		//User
+		drawchar(user_x, HEIGHT-2, '=');
+		//Opponent
+		drawchar(opponent_x, 1, '=');
+		drawchar(ball.x, ball.y, 'O');
+		drawscreen();
+		Sleep(100);
+	}
 }
 
 //Game Loop logic (server only)
@@ -267,6 +286,17 @@ DWORD WINAPI Listener_Server(void* data){
 		// puts(server_reply);
 	};
 }
+
+//Game init vars
+void gameinit(){
+	user_x = WIDTH/2;
+	opponent_x = WIDTH/2;
+	ball.x = WIDTH/2;
+	ball.y = WIDTH/2;
+	ball.dx = 0;
+	ball.dy =1;
+}
+
 //Create server
 int gamehost(){
 	//Initialise winsock
@@ -319,11 +349,14 @@ int gamehost(){
 
 		//Game loop stuff here
 		ingame = true;
+		gameinit();
 		//init threads
 		HANDLE thread_listener = CreateThread(NULL, 0, Listener_Server, NULL, 0, NULL);
 		HANDLE thread_sender = CreateThread(NULL, 0, Sender_Server, NULL, 0, NULL);
 		HANDLE thread_controller = CreateThread(NULL, 0, Controller, NULL, 0, NULL);
+		//Game loop
 
+		GraphicsLoop();
 	}
 	
 	if (new_socket == INVALID_SOCKET)
@@ -377,11 +410,13 @@ int gamejoin(){
 	puts("Connected");
 	
 	ingame = true;
-
+	gameinit();
 	//init all threads
 	HANDLE thread_listener = CreateThread(NULL, 0, Listener_Client, NULL, 0, NULL);
 	HANDLE thread_sender = CreateThread(NULL, 0, Sender_Client, NULL, 0, NULL);
 	HANDLE thread_controller = CreateThread(NULL, 0, Controller, NULL, 0, NULL);
+
+	GraphicsLoop();
 
 	//call game loop
 
