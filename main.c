@@ -35,8 +35,8 @@ char GC[HEIGHT][WIDTH];
 bool ingame = false;
 
 //OPPONENT STRUCT
-int opponent_y;
-int user_y;
+int opponent_x;
+int user_x;
 
 /*__________________________HELPER FUNCTIONS__________________________*/
 //Move Cursor
@@ -197,15 +197,35 @@ void drawborder()
 	drawline(0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, '-');
 }
 /*____________________________________________________________________*/
-//Game Loop logic
+DWORD WINAPI GraphicsLoop(void* data){
+
+}
+
+//Game Loop logic (server only)
 DWORD WINAPI GameLoop(void* data){
 
+}
+
+//Checks if move is possible and updates
+void valid_move(int d){
+	if(d == -1){
+		if((user_x - 1) >= 1){user_x--;}
+	}else{
+		if((user_x + 1) < WIDTH){user_x++;}
+	}
 }
 
 //Controller Thread
 DWORD WINAPI Controller(void* data){
 	while(ingame){
 		char ip = getch();
+		if(ip == 'a' || ip =='A'){
+			//Move Left Call function to validate input
+			valid_move(-1);
+		}else if(ip == 'd' || ip =='d'){
+			//Move Right
+			valid_move(1);
+		}
 		Sleep(50);
 	};
 }
