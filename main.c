@@ -212,9 +212,21 @@ void drawborder()
 void GraphicsLoop(){
 	cursor(FALSE);
 	while(ingame){
-		//Once every 10 seconds
 		clearcanvas();
 		drawborder();
+
+		if(host){
+			drawchar(ball.x, ball.y, 'O');
+			drawchar(WIDTH-4, 0, sscore+'0');		
+			drawchar(WIDTH-3, 0, ':');
+			drawchar(WIDTH-2, 0, cscore+'0');		
+		}else{
+			drawchar(ball.x, HEIGHT-ball.y, 'O');
+			drawchar(WIDTH-4, 0, cscore+'0');		
+			drawchar(WIDTH-3, 0, ':');
+			drawchar(WIDTH-2, 0, sscore+'0');
+		}
+	
 		//User
 		drawchar(user_x-1, HEIGHT-2, '-');
 		drawchar(user_x, HEIGHT-2, '=');
@@ -224,13 +236,6 @@ void GraphicsLoop(){
 		drawchar(opponent_x-1, 1, '-');
 		drawchar(opponent_x, 1, '=');
 		drawchar(opponent_x+1, 1, '-');
-
-		if(host){
-			drawchar(ball.x, ball.y, 'O');
-		}else{
-			drawchar(ball.x, HEIGHT-ball.y, 'O');
-		}
-		
 		drawscreen();
 		Sleep(50);
 	}
@@ -258,8 +263,28 @@ DWORD WINAPI GameLoop(void* data){
 
 			//Points
 			if(ball.y + ball.dy >= HEIGHT || ball.y + ball.dy <=0){
+				if(ball.y > 20){
+					cscore++;
+				}else{
+					sscore++;
+				}
 				ball.y = HEIGHT/2;
 				ball.x = WIDTH/2;
+
+				//check to see if game is over
+				if(cscore >= 7 || sscore >= 7){
+					//Game over
+					Sleep(500);
+					ingame = false;
+					if(sscore > cscore){
+						writescreen(centertext("WINNER"), HEIGHT/2, "WINNER");
+					}else{
+						writescreen(centertext("LOSER"), HEIGHT/2, "LOSER");
+					}
+					drawscreen();
+					char ip = getch();
+					clrscr();
+				}
 			}
 			// else{ball.dy = ball.dy *-1;}
 		}
@@ -318,7 +343,22 @@ DWORD WINAPI Listener_Client(void* data){
 		opponent_x = ctoi(server_reply[0])*10 + ctoi(server_reply[1]);
 		ball.x = ctoi(server_reply[2])*10 + ctoi(server_reply[3]);
 		ball.y = ctoi(server_reply[4])*10 + ctoi(server_reply[5]);
+		sscore = ctoi(server_reply[6]);
+		cscore = ctoi(server_reply[7]);
 		// printf("%d  %d\n", ball.y, ctoi(server_reply[4])*10);
+		if(cscore >= 7 || sscore >= 7){
+			//Game over
+			Sleep(500);
+			ingame = false;
+			if(sscore > cscore){
+				writescreen(centertext("LOSER"), HEIGHT/2, "LOSER");
+			}else{
+				writescreen(centertext("WINNER"), HEIGHT/2, "WINNER");
+			}
+			drawscreen();
+			char ip = getch();
+			clrscr();
+		}
 	};
 }
 
@@ -385,7 +425,7 @@ void gameinit(){
 	ball.ox = 0;
 	ball.oy = 0;
 	sscore=0;
-	sscore=0;
+	cscore=0;
 }
 
 //Create server
@@ -426,7 +466,7 @@ int gamehost(){
 	listen(s , 1);
 	c = sizeof(struct sockaddr_in);
 	
-	while( (new_socket = accept(s , (struct sockaddr *)&client, &c)) != INVALID_SOCKET )
+	if( (new_socket = accept(s , (struct sockaddr *)&client, &c)) != INVALID_SOCKET )
 	{
 		puts("Connection accepted");
 
