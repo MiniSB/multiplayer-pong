@@ -32,17 +32,19 @@ char GC[HEIGHT][WIDTH];
 
 //in game bool
 bool ingame = false;
+bool host = false;
 
 //OPPONENT STRUCT
 int opponent_x;
 int user_x;
 
 struct _ball{
-	int x;int y;int dx;int dy;
+	int x;int y;int dx;int dy;int ox; int oy;
 };
 
 struct _ball ball;
-int score;
+int sscore;
+int cscore;
 /*__________________________HELPER FUNCTIONS__________________________*/
 //Move Cursor
 void cursormove(int x, int y)
@@ -101,7 +103,7 @@ int centertext(char c[]){
 }
 
 int ctoi(char c){
-	int i = c -0; return i;
+	int i = c -0; if(c == '0'){return 0;}return i;
 }
 /*_________________________GRAPHICS LIBRARY____________________________*/
 
@@ -214,10 +216,21 @@ void GraphicsLoop(){
 		clearcanvas();
 		drawborder();
 		//User
+		drawchar(user_x-1, HEIGHT-2, '-');
 		drawchar(user_x, HEIGHT-2, '=');
+		drawchar(user_x+1, HEIGHT-2, '-');
+
 		//Opponent
+		drawchar(opponent_x-1, 1, '-');
 		drawchar(opponent_x, 1, '=');
-		drawchar(ball.x, ball.y, 'O');
+		drawchar(opponent_x+1, 1, '-');
+
+		if(host){
+			drawchar(ball.x, ball.y, 'O');
+		}else{
+			drawchar(ball.x, HEIGHT-ball.y, 'O');
+		}
+		
 		drawscreen();
 		Sleep(50);
 	}
@@ -225,15 +238,35 @@ void GraphicsLoop(){
 
 //Game Loop logic (server only) ball and its collisions
 DWORD WINAPI GameLoop(void* data){
+	int lx = 2; int ly =2;
+	while(ingame){
+		//Move ball
+		if(ball.ox >= lx){
+			if(ball.x + ball.dx < WIDTH-2 && ball.x + ball.dx > 1){
+				ball.x += ball.dx;
+			}else{ball.dx = ball.dx*-1;}
+		}
+		
+		if(ball.oy >= ly){
+			if(ball.y + ball.dy < HEIGHT-1 && ball.y + ball.dy >= 1){
+				ball.y += ball.dy;
+			}else{ball.dy = ball.dy *-1;}
+		}
+		ball.ox++; ball.oy++;
+		if(ball.ox > lx){ball.ox=0;}
+		if(ball.oy > ly){ball.oy=0;}
+		//Check collisions
 
+		Sleep(50);
+	}
 }
 
 //Checks if move is possible and updates
 void valid_move(int d){
 	if(d == -1){
-		if((user_x - 1) >= 1){user_x--;}
+		if((user_x - 1) >= 2){user_x--;}
 	}else{
-		if((user_x + 1) < WIDTH-1){user_x++;}
+		if((user_x + 1) < WIDTH-2){user_x++;}
 	}
 }
 
@@ -248,7 +281,7 @@ DWORD WINAPI Controller(void* data){
 			//Move Right
 			valid_move(1);
 		}
-		Sleep(25);
+		Sleep(30);
 	};
 }
 
@@ -268,12 +301,13 @@ DWORD WINAPI Listener_Client(void* data){
 	while(ingame){
 		if((recv_size = recv(s , server_reply , 2000 , 0)) == SOCKET_ERROR)
 		{
-			puts("recv failed");
+			// puts("recv failed");
 		}
 		server_reply[recv_size] = '\0';
 		opponent_x = ctoi(server_reply[0])*10 + ctoi(server_reply[1]);
 		ball.x = ctoi(server_reply[2])*10 + ctoi(server_reply[3]);
 		ball.y = ctoi(server_reply[4])*10 + ctoi(server_reply[5]);
+		// printf("%d  %d\n", ball.y, ctoi(server_reply[4])*10);
 	};
 }
 
@@ -307,8 +341,8 @@ DWORD WINAPI Sender_Server(void* data){
 		}
 
 		//score [6,7] server/client
-		packet[6] = score;
-		packet[7] = score;
+		packet[6] = sscore;
+		packet[7] = cscore;
 
 		if(send(new_socket , packet , 8 , 0) < 0){};
 		Sleep(50);
@@ -334,16 +368,20 @@ void gameinit(){
 	user_x = WIDTH/2;
 	opponent_x = WIDTH/2;
 	ball.x = WIDTH/2;
-	ball.y = WIDTH/2;
-	ball.dx = 0;
+	ball.y = HEIGHT/2;
+	ball.dx = 1;
 	ball.dy =1;
-	score=0;
+	ball.ox = 0;
+	ball.oy = 0;
+	sscore=0;
+	sscore=0;
 }
 
 //Create server
 int gamehost(){
 	//Initialise winsock
 	int c;
+	host = true;
 	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 	{
 		//Failed
@@ -388,6 +426,7 @@ int gamehost(){
 		HANDLE thread_listener = CreateThread(NULL, 0, Listener_Server, NULL, 0, NULL);
 		HANDLE thread_sender = CreateThread(NULL, 0, Sender_Server, NULL, 0, NULL);
 		HANDLE thread_controller = CreateThread(NULL, 0, Controller, NULL, 0, NULL);
+		HANDLE thread_gameloop = CreateThread(NULL, 0, GameLoop, NULL, 0, NULL);
 		//Game loop
 
 		GraphicsLoop();
@@ -400,6 +439,7 @@ int gamehost(){
 		return 1;
 	}
 
+	host = false;
 	closesocket(s);
 	WSACleanup();
 	
