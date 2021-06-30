@@ -26,7 +26,6 @@ SOCKET s , new_socket;
 struct sockaddr_in server , client;
 char server_reply[2000];
 int recv_size;
-int packet[7];
 
 //Game board dimensions
 char GC[HEIGHT][WIDTH];
@@ -43,7 +42,7 @@ struct _ball{
 };
 
 struct _ball ball;
-
+int score;
 /*__________________________HELPER FUNCTIONS__________________________*/
 //Move Cursor
 void cursormove(int x, int y)
@@ -206,6 +205,7 @@ void drawborder()
 
 //Draws the screen
 void GraphicsLoop(){
+	cursor(FALSE);
 	while(ingame){
 		//Once every 10 seconds
 		clearcanvas();
@@ -245,14 +245,18 @@ DWORD WINAPI Controller(void* data){
 			//Move Right
 			valid_move(1);
 		}
-		Sleep(50);
+		Sleep(25);
 	};
 }
 
 //Client Sender
 DWORD WINAPI Sender_Client(void* data){
 	while(ingame){
-		
+		//Send position every 1/10th of second
+		char packet[10];
+		sprintf(packet, "%d", user_x);
+		if(send(s , packet , 2 , 0) < 0){};
+		Sleep(50);
 	};
 }
 
@@ -264,26 +268,27 @@ DWORD WINAPI Listener_Client(void* data){
 			// puts("recv failed");
 		}
 		server_reply[recv_size] = '\0';
-		puts(server_reply);
 	};
 }
 
 //Client Sender
 DWORD WINAPI Sender_Server(void* data){
 	while(ingame){
-		
+		packet[7];
 	};
 }
 
 //Server Listener
 DWORD WINAPI Listener_Server(void* data){
 	while(ingame){
-		if((recv_size = recv(s , server_reply , 2000 , 0)) == SOCKET_ERROR)
+		if((recv_size = recv(new_socket , server_reply , 2000 , 0)) == SOCKET_ERROR)
 		{
-			// puts("recv failed");
+			// server_reply[recv_size] = '\0';
+			// puts(server_reply);
 		}
 		server_reply[recv_size] = '\0';
-		// puts(server_reply);
+		opponent_x = atoi(server_reply);
+		
 	};
 }
 
@@ -295,6 +300,7 @@ void gameinit(){
 	ball.y = WIDTH/2;
 	ball.dx = 0;
 	ball.dy =1;
+	score=0;
 }
 
 //Create server
