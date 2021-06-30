@@ -12,11 +12,9 @@
 #include<winsock2.h>
 #pragma comment(lib,"ws2_32.lib") //Winsock Library
 
-
 #define WIDTH 40
 #define HEIGHT 40
 #define gotoxy(x, y) printf("\033[%d;%dH", (y), (x))
-
 
 //Port and address for connections
 int PORT = 8080;
@@ -28,6 +26,7 @@ SOCKET s , new_socket;
 struct sockaddr_in server , client;
 char server_reply[2000];
 int recv_size;
+int packet[7];
 
 //Game board dimensions
 char GC[HEIGHT][WIDTH];
@@ -36,13 +35,8 @@ char GC[HEIGHT][WIDTH];
 bool ingame = false;
 
 //OPPONENT STRUCT
-struct opponent {
-	int y;
-};
-//USER STRUCT
-struct user{
-	int y;
-};
+int opponent_y;
+int user_y;
 
 /*__________________________HELPER FUNCTIONS__________________________*/
 //Move Cursor
@@ -203,6 +197,56 @@ void drawborder()
 	drawline(0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, '-');
 }
 /*____________________________________________________________________*/
+//Game Loop logic
+DWORD WINAPI GameLoop(void* data){
+
+}
+
+//Controller Thread
+DWORD WINAPI Controller(void* data){
+	while(ingame){
+		char ip = getch();
+		Sleep(50);
+	};
+}
+
+//Client Sender
+DWORD WINAPI Sender_Client(void* data){
+	while(ingame){
+		
+	};
+}
+
+//Client Listener
+DWORD WINAPI Listener_Client(void* data){
+	while(ingame){
+		if((recv_size = recv(s , server_reply , 2000 , 0)) == SOCKET_ERROR)
+		{
+			// puts("recv failed");
+		}
+		server_reply[recv_size] = '\0';
+		puts(server_reply);
+	};
+}
+
+//Client Sender
+DWORD WINAPI Sender_Server(void* data){
+	while(ingame){
+		
+	};
+}
+
+//Server Listener
+DWORD WINAPI Listener_Server(void* data){
+	while(ingame){
+		if((recv_size = recv(s , server_reply , 2000 , 0)) == SOCKET_ERROR)
+		{
+			// puts("recv failed");
+		}
+		server_reply[recv_size] = '\0';
+		// puts(server_reply);
+	};
+}
 //Create server
 int gamehost(){
 	//Initialise winsock
@@ -237,7 +281,7 @@ int gamehost(){
 	//Bind is done
 	//Listen to incoming connections, int denotes time before timeout
 	puts("Listening");
-	listen(s , 3);
+	listen(s , 1);
 	c = sizeof(struct sockaddr_in);
 	
 	while( (new_socket = accept(s , (struct sockaddr *)&client, &c)) != INVALID_SOCKET )
@@ -247,11 +291,19 @@ int gamehost(){
 		//Reply to the client
 		//Game loop stuff goes in here
 		// while(true){
-			char message[] = "Hello Client , I have received your connection. But I have to go now, bye\n";
-			send(new_socket , message , strlen(message) , 0);
-			Sleep(1000);
+		// 	char message[] = "Hello Client , I have received your connection. But I have to go now, bye\n";
+		// 	send(new_socket , message , strlen(message) , 0);
+		// 	Sleep(1000);
 			
-		// }
+		// // }
+
+		//Game loop stuff here
+		ingame = true;
+		//init threads
+		HANDLE thread_listener = CreateThread(NULL, 0, Listener_Server, NULL, 0, NULL);
+		HANDLE thread_sender = CreateThread(NULL, 0, Sender_Server, NULL, 0, NULL);
+		HANDLE thread_controller = CreateThread(NULL, 0, Controller, NULL, 0, NULL);
+
 	}
 	
 	if (new_socket == INVALID_SOCKET)
@@ -303,18 +355,17 @@ int gamejoin(){
 	}
 	
 	puts("Connected");
-	// while(true){
-		//Game loop stuff goes in here
-		if((recv_size = recv(s , server_reply , 2000 , 0)) == SOCKET_ERROR)
-		{
-			puts("recv failed");
-		}
-		server_reply[recv_size] = '\0';
-		puts(server_reply);
-		Sleep(1000);
-	// }
 	
+	ingame = true;
 
+	//init all threads
+	HANDLE thread_listener = CreateThread(NULL, 0, Listener_Client, NULL, 0, NULL);
+	HANDLE thread_sender = CreateThread(NULL, 0, Sender_Client, NULL, 0, NULL);
+	HANDLE thread_controller = CreateThread(NULL, 0, Controller, NULL, 0, NULL);
+
+	//call game loop
+
+	Sleep(1000);
 	closesocket(s);
 	WSACleanup();
 	return 0;
