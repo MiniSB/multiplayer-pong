@@ -246,11 +246,22 @@ DWORD WINAPI GameLoop(void* data){
 				ball.x += ball.dx;
 			}else{ball.dx = ball.dx*-1;}
 		}
-		
+
 		if(ball.oy >= ly){
-			if(ball.y + ball.dy < HEIGHT-1 && ball.y + ball.dy >= 1){
+			if(ball.y + ball.dy == 1 && (ball.x >= opponent_x-1 && ball.x <= opponent_x+1)){
+				ball.dy = ball.dy *-1;
+			}else if(ball.y + ball.dy == HEIGHT-2 && (ball.x >= user_x-1 && ball.x <= user_x+1)){
+				ball.dy = ball.dy *-1;
+			}else{
 				ball.y += ball.dy;
-			}else{ball.dy = ball.dy *-1;}
+			}
+
+			//Points
+			if(ball.y + ball.dy >= HEIGHT || ball.y + ball.dy <=0){
+				ball.y = HEIGHT/2;
+				ball.x = WIDTH/2;
+			}
+			// else{ball.dy = ball.dy *-1;}
 		}
 		ball.ox++; ball.oy++;
 		if(ball.ox > lx){ball.ox=0;}
