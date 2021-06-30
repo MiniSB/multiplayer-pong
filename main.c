@@ -96,9 +96,12 @@ int pointerlen(char c[])
 }
 
 //return position for text to be centred
-int centertext(char c[])
-{
+int centertext(char c[]){
 	return (WIDTH - pointerlen(c)) / 2;
+}
+
+int ctoi(char c){
+	int i = c -0; return i;
 }
 /*_________________________GRAPHICS LIBRARY____________________________*/
 
@@ -216,11 +219,11 @@ void GraphicsLoop(){
 		drawchar(opponent_x, 1, '=');
 		drawchar(ball.x, ball.y, 'O');
 		drawscreen();
-		Sleep(100);
+		Sleep(50);
 	}
 }
 
-//Game Loop logic (server only)
+//Game Loop logic (server only) ball and its collisions
 DWORD WINAPI GameLoop(void* data){
 
 }
@@ -230,7 +233,7 @@ void valid_move(int d){
 	if(d == -1){
 		if((user_x - 1) >= 1){user_x--;}
 	}else{
-		if((user_x + 1) < WIDTH){user_x++;}
+		if((user_x + 1) < WIDTH-1){user_x++;}
 	}
 }
 
@@ -265,16 +268,50 @@ DWORD WINAPI Listener_Client(void* data){
 	while(ingame){
 		if((recv_size = recv(s , server_reply , 2000 , 0)) == SOCKET_ERROR)
 		{
-			// puts("recv failed");
+			puts("recv failed");
 		}
 		server_reply[recv_size] = '\0';
+		opponent_x = ctoi(server_reply[0])*10 + ctoi(server_reply[1]);
+		ball.x = ctoi(server_reply[2])*10 + ctoi(server_reply[3]);
+		ball.y = ctoi(server_reply[4])*10 + ctoi(server_reply[5]);
 	};
 }
 
 //Client Sender
 DWORD WINAPI Sender_Server(void* data){
 	while(ingame){
-		packet[7];
+		char packet[8];
+
+		//users x [0,1]
+		if(user_x >9){
+			packet[0]= user_x % 10;
+			packet[1]= user_x - ((user_x % 10)*10);
+		}else{
+			packet[0]='0'; char c=user_x; packet[1]=c;
+		}
+
+		//ball x [2,3]
+		if(ball.x >9){
+			packet[2]= ball.x % 10;
+			packet[3]= ball.x - ((ball.x % 10)*10);
+		}else{
+			packet[2]='0'; char c=ball.x; packet[3]=c;
+		}
+
+		//ball y [4,5]
+		if(ball.y >9){
+			packet[4]= ball.y % 10;
+			packet[5]= ball.y - ((ball.y % 10)*10);
+		}else{
+			packet[4]='0'; char c=ball.y; packet[5]=c;
+		}
+
+		//score [6,7] server/client
+		packet[6] = score;
+		packet[7] = score;
+
+		if(send(new_socket , packet , 8 , 0) < 0){};
+		Sleep(50);
 	};
 }
 
@@ -343,15 +380,6 @@ int gamehost(){
 	while( (new_socket = accept(s , (struct sockaddr *)&client, &c)) != INVALID_SOCKET )
 	{
 		puts("Connection accepted");
-		
-		//Reply to the client
-		//Game loop stuff goes in here
-		// while(true){
-		// 	char message[] = "Hello Client , I have received your connection. But I have to go now, bye\n";
-		// 	send(new_socket , message , strlen(message) , 0);
-		// 	Sleep(1000);
-			
-		// // }
 
 		//Game loop stuff here
 		ingame = true;
