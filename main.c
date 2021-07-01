@@ -867,14 +867,22 @@ void mainmenu(int option)
 	{
 		writescreen(centertext("2. Join Game"), 25, "2. Join Game");
 	}
-
 	if (option == 2)
 	{
-		writescreen(centertext("3. Exit"), 30, " -> 3. Exit");
+		writescreen(centertext("3. Full Screen"), 30, " -> 3. Full Screen");
 	}
 	else
 	{
-		writescreen(centertext("3. Exit"), 30, "3. Exit");
+		writescreen(centertext("3. Full Screen"), 30, "3. Full Screen");
+	}
+
+	if (option == 3)
+	{
+		writescreen(centertext("4. Exit"), 35, " -> 4. Exit");
+	}
+	else
+	{
+		writescreen(centertext("4. Exit"), 35, "4. Exit");
 	}
 	// writescreen((WIDTH-pointerlen("Pong, Multipleayer Game"))/2);
 }
@@ -882,6 +890,7 @@ void mainmenu(int option)
 void init()
 {
 	//Set game board to empty
+	system("mode 100");
 	clrscr();
 	for (int i = 0; i < WIDTH; i++)
 	{
@@ -890,6 +899,7 @@ void init()
 			GC[i][j] = ' ';
 		}
 	}
+	cursormove(0,0);
 }
 
 int main(int argc, char *argv[])
@@ -919,13 +929,13 @@ int main(int argc, char *argv[])
 			option--;
 		}
 
-		if (option > 2)
+		if (option > 3)
 		{
 			option = 0;
 		}
 		else if (option < 0)
 		{
-			option = 2;
+			option = 3;
 		}
 
 		if (ip == 'f' || ip == 'F')
@@ -938,9 +948,14 @@ int main(int argc, char *argv[])
 			{
 				clientmenu();
 			}
-			else if (option == 2)
+			else if (option == 3)
 			{
 				valid = true;
+			}else if(option ==2){
+				keybd_event(VK_MENU,0x38,0,0);
+				keybd_event(VK_RETURN,0x1c,0,0);
+				keybd_event(VK_RETURN,0x1c,KEYEVENTF_KEYUP,0);
+				keybd_event(VK_MENU,0x38,KEYEVENTF_KEYUP,0);
 			}
 		};
 	}
