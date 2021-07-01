@@ -1,7 +1,7 @@
 # Multiplayer Pong written in C
 ## Compiling the project
 To compile the project, run 
->gcc main.c -o pong.exe -lws2_32 
+```gcc main.c -o pong.exe -lws2_32 ```
 In windows command prompt or powershell. This game will only 
 run and compile on windows machines.
 
