@@ -22,3 +22,6 @@ Use A/D to move the paddle Left/Right respectively
 ###### Gameplay
 A point is scored when an opponent fails to bounce back the ball and it
 hits the back wall. First person to 7 points wins the game.
+
+
+If you find a bug in my program, please leave an issue. Thanks
