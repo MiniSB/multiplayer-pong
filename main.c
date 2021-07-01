@@ -33,6 +33,7 @@ char GC[HEIGHT][WIDTH];
 //in game bool
 bool ingame = false;
 bool host = false;
+bool loading = false;
 
 //OPPONENT STRUCT
 int opponent_x;
@@ -206,6 +207,13 @@ void drawborder()
 	drawline(0, 0, WIDTH - 1, 0, '-');
 	drawline(0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, '-');
 }
+
+void screenmessage(char c[]){
+	clearcanvas();
+	drawborder();
+	writescreen(centertext(c), 20, c);
+	drawscreen();
+}
 /*____________________________________________________________________*/
 
 //Draws the screen
@@ -249,14 +257,22 @@ DWORD WINAPI GameLoop(void* data){
 		if(ball.ox >= lx){
 			if(ball.x + ball.dx < WIDTH-2 && ball.x + ball.dx > 1){
 				ball.x += ball.dx;
-			}else{ball.dx = ball.dx*-1;}
+			}
+			else{ball.dx = ball.dx*-1;}
 		}
 
 		if(ball.oy >= ly){
 			if(ball.y + ball.dy == 1 && (ball.x >= opponent_x-1 && ball.x <= opponent_x+1)){
 				ball.dy = ball.dy *-1;
+				if(ball.x == opponent_x-1 || ball.x == user_x-1){ball.dx = -1;}
+				else if(ball.x == opponent_x+1 || ball.x == user_x+1){ball.dx = 1;}
+				else if(ball.x == opponent_x || ball.x == user_x){ball.dx = 0;}
+
 			}else if(ball.y + ball.dy == HEIGHT-2 && (ball.x >= user_x-1 && ball.x <= user_x+1)){
 				ball.dy = ball.dy *-1;
+				if(ball.x == opponent_x-1 || ball.x == user_x-1){ball.dx = -1;}
+				else if(ball.x == opponent_x+1 || ball.x == user_x+1){ball.dx = 1;}
+				else if(ball.x == opponent_x || ball.x == user_x){ball.dx = 0;}
 			}else{
 				ball.y += ball.dy;
 			}
@@ -400,6 +416,33 @@ DWORD WINAPI Sender_Server(void* data){
 	};
 }
 
+DWORD WINAPI gameloading(void* data){
+	int tick = 0;
+	cursor(FALSE);
+	int ctr= centertext("Loading");
+	
+	while(loading){
+		clearcanvas();
+		drawborder();
+		char message[20] = "Loading";
+		if(tick == 0){
+			char c[] = ".";
+			strcat(message, c);
+		}else if(tick == 1){
+			char c[] = "..";
+			strcat(message, c);
+		}else{
+			char c[] = "...";
+			strcat(message, c);
+		}
+		writescreen(ctr, 20, message);
+		tick++;
+		if(tick >= 3){tick = 0;}
+
+		drawscreen();
+		Sleep(500);
+	}
+}
 //Server Listener
 DWORD WINAPI Listener_Server(void* data){
 	while(ingame){
@@ -462,13 +505,17 @@ int gamehost(){
 	
 	//Bind is done
 	//Listen to incoming connections, int denotes time before timeout
-	puts("Listening");
+	loading = true;
+	HANDLE thread_gl = CreateThread(NULL, 0, gameloading, NULL, 0, NULL);
 	listen(s , 1);
 	c = sizeof(struct sockaddr_in);
 	
 	if( (new_socket = accept(s , (struct sockaddr *)&client, &c)) != INVALID_SOCKET )
 	{
-		puts("Connection accepted");
+		loading = false;
+		Sleep(500);
+		screenmessage("User Joined Game");
+		Sleep(1000);
 
 		//Game loop stuff here
 		ingame = true;
@@ -502,37 +549,40 @@ int gamejoin(){
 	/*
 		Makes a socket connection
 	*/
-	printf("\n");
-	printf("\nInitialising Winsock...");
+	// printf("\n");
+	// printf("\nInitialising Winsock...");
 	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 	{
-		printf("\nFailed. Error Code : %d",WSAGetLastError());
+		screenmessage("An Error has Occured");
+		Sleep(1000);
+		clrscr();
 		return 1;
 	}
 	
-	printf("Initialised.\n");
 	
 	//Create a socket
-	if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET)
-	{
-		printf("Could not create socket : %d" , WSAGetLastError());
-	}
+	if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET){}//Failed to create socket
 
-	printf("Socket created.\n");
-	
-	
 	server.sin_addr.s_addr = inet_addr(ADDRESS);
 	server.sin_family = AF_INET;
 	server.sin_port = htons( PORT );
 
 	//Connect to remote server
+	loading = true;
+	HANDLE thread_gl = CreateThread(NULL, 0, gameloading, NULL, 0, NULL);
 	if (connect(s , (struct sockaddr *)&server , sizeof(server)) < 0)
 	{
-		puts("connect error");
+		loading = false;
+		Sleep(500);
+		clrscr();
+		screenmessage("Connection Error");
+		Sleep(1000);
+		clrscr();
 		return 1;
 	}
-	
-	puts("Connected");
+	loading = false;
+	screenmessage("Game Joined");
+	Sleep(1000);
 	
 	ingame = true;
 	gameinit();
