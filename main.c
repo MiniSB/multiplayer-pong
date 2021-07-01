@@ -478,16 +478,14 @@ int gamehost(){
 	host = true;
 	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 	{
-		//Failed
-		printf("Failed. Error Code : %d",WSAGetLastError());
+		screenmessage("An Error has Occured");
+		Sleep(1000);
+		clrscr();
 		return 1;
 	}
 
 	//Create a socket
-	if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET)
-	{
-		printf("Could not create socket : %d" , WSAGetLastError());
-	}
+	if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET){}//failed to create socket
 
 	//Socket should be created by now
 	//Prepare the sockaddr_in structure
@@ -498,9 +496,9 @@ int gamehost(){
 	//Bind the socket
 	if( bind(s ,(struct sockaddr *)&server , sizeof(server)) == SOCKET_ERROR)
 	{
-		//bind has failed, exit program
-		printf("Bind failed with error code : %d" , WSAGetLastError());
-		// exit(EXIT_FAILURE);
+		screenmessage("An Error has Occured");
+		Sleep(1000);
+		clrscr();
 	}
 	
 	//Bind is done
@@ -530,10 +528,12 @@ int gamehost(){
 		GraphicsLoop();
 	}
 	
+	loading = false;
 	if (new_socket == INVALID_SOCKET)
 	{
-		printf("accept failed with error code : %d" , WSAGetLastError());
-		// Socket was invalid, just exit
+		screenmessage("An Error has Occured");
+		Sleep(1000);
+		clrscr();
 		return 1;
 	}
 
@@ -546,11 +546,6 @@ int gamehost(){
 
 //Join server
 int gamejoin(){
-	/*
-		Makes a socket connection
-	*/
-	// printf("\n");
-	// printf("\nInitialising Winsock...");
 	if (WSAStartup(MAKEWORD(2,2),&wsa) != 0)
 	{
 		screenmessage("An Error has Occured");
@@ -558,7 +553,6 @@ int gamejoin(){
 		clrscr();
 		return 1;
 	}
-	
 	
 	//Create a socket
 	if((s = socket(AF_INET , SOCK_STREAM , 0 )) == INVALID_SOCKET){}//Failed to create socket
@@ -592,8 +586,6 @@ int gamejoin(){
 	HANDLE thread_controller = CreateThread(NULL, 0, Controller, NULL, 0, NULL);
 
 	GraphicsLoop();
-
-	//call game loop
 
 	Sleep(1000);
 	closesocket(s);
